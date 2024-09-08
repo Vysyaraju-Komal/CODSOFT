@@ -1,0 +1,140 @@
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+class Question 
+{
+    private String question;
+    private String[] options;
+    private int correctOptionIndex;
+    
+    public Question(String question, String[] options, int correctOptionIndex) {
+        this.question = question;
+        this.options = options;
+        this.correctOptionIndex = correctOptionIndex;
+    }
+
+    public String getQuestion() 
+    {
+        return question;
+    }
+
+    public String[] getOptions() 
+    {
+        return options;
+    }
+
+    public boolean isCorrectAnswer(int index) 
+    {
+        return index == correctOptionIndex;
+    }
+}
+class QuestionTimer 
+{
+    private Timer timer;
+    private int timeLimit; 
+    public QuestionTimer(int timeLimit) 
+    {
+        this.timeLimit = timeLimit;
+        this.timer = new Timer();
+    }
+
+    public void start(Runnable timeoutAction)
+    {
+        timer.schedule(new TimerTask() 
+        {
+            @Override
+            public void run() 
+            {
+                timeoutAction.run();
+            }
+        }, timeLimit * 1000);
+    }
+
+    public void stop() 
+    {
+        timer.cancel();
+    }
+}
+
+public class QuizApplication
+{
+    private Question[] questions;
+    private int currentQuestionIndex = 0;
+    private int score = 0;
+    private Scanner scanner = new Scanner(System.in);
+
+    public QuizApplication(Question[] questions) 
+    {
+        this.questions = questions;
+    }
+
+    public void startQuiz() 
+    {
+        for (currentQuestionIndex = 0; currentQuestionIndex < questions.length; currentQuestionIndex++)
+        {
+            Question currentQuestion = questions[currentQuestionIndex];
+            displayQuestion(currentQuestion);
+            handleAnswer(currentQuestion);
+        }
+        showResults();
+    }
+
+    private void displayQuestion(Question question) 
+    {
+        System.out.println("Question: " + question.getQuestion());
+        String[] options = question.getOptions();
+        for (int i = 0; i < options.length; i++) 
+        {
+            System.out.println((i + 1) + ": " + options[i]);
+        }
+    }
+
+    private void handleAnswer(Question question) 
+    {
+        QuestionTimer timer = new QuestionTimer(10); 
+        timer.start(() -> 
+        {
+            System.out.println("\nTime's up!");
+            scanner.nextLine(); 
+        });
+        System.out.print("\nYour answer (number): ");
+        int answer = scanner.nextInt() - 1;
+        timer.stop();
+
+        if (question.isCorrectAnswer(answer)) 
+        {
+            System.out.println("Correct!");
+            score++;
+        } 
+        else 
+        {
+            System.out.println("Incorrect!");
+        }
+    }
+
+    private void showResults() 
+    {
+        System.out.println("\nQuiz finished!");
+        System.out.println("Your score: " + score + "/" + questions.length);
+    }
+
+    public static void main(String[] args) 
+    {
+        Question[] questions = {
+            new Question("What is the capital of France?", new String[] {"Paris", "London", "Berlin", "Madrid"}, 0),
+            new Question("What is 2 + 2?", new String[] {"3", "4", "5", "6"}, 1),
+            new Question("What is the largest planet in our solar system?", new String[] {"Earth", "Mars", "Jupiter", "Saturn"}, 2),
+            new Question("Who wrote 'To Kill a Mockingbird'?", new String[] {"Harper Lee", "Mark Twain", "J.K. Rowling", "Ernest Hemingway"}, 0),
+            new Question("What is the chemical symbol for Gold?", new String[] {"Au", "Ag", "Pb", "Fe"}, 0),
+            new Question("What year did the Titanic sink?", new String[] {"1912", "1905", "1923", "1898"}, 0),
+            new Question("Which element has the atomic number 1?", new String[] {"Helium", "Hydrogen", "Lithium", "Oxygen"}, 1),
+            new Question("What is the hardest natural substance on Earth?", new String[] {"Gold", "Iron", "Diamond", "Platinum"}, 2),
+            new Question("Who painted the Mona Lisa?", new String[] {"Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"}, 2),
+            new Question("What is the capital of Japan?", new String[] {"Beijing", "Seoul", "Tokyo", "Osaka"}, 2)
+        };
+
+        QuizApplication quiz = new QuizApplication(questions);
+        quiz.startQuiz();
+    }
+}
