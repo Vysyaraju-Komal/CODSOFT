@@ -1,0 +1,288 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
+class Course
+{
+    private String code;
+    private String title;
+    private String description;
+    private int capacity;
+    private int enrolledStudents = 0;
+    private String schedule;
+
+    public Course(String code, String title, String description, int capacity, String schedule) 
+    {
+        this.code = code;
+        this.title = title;
+        this.description = description;
+        this.capacity = capacity;
+        this.schedule = schedule;
+    }
+
+    public String getCode() 
+    {
+        return code;
+    }
+
+    public String getTitle() 
+    {
+        return title;
+    }
+
+    public String getDescription() 
+    {
+        return description;
+    }
+
+    public int getCapacity() 
+    {
+        return capacity;
+    }
+
+    public int getEnrolledStudents() 
+    {
+        return enrolledStudents;
+    }
+
+    public String getSchedule() 
+    {
+        return schedule;
+    }
+
+    public boolean hasAvailableSlot() 
+    {
+        return enrolledStudents < capacity;
+    }
+
+    public boolean registerStudent() 
+    {
+        if (hasAvailableSlot()) 
+        {
+            enrolledStudents++;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeStudent() 
+    {
+        if (enrolledStudents > 0) 
+        {
+            enrolledStudents--;
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() 
+    {
+        return String.format("Course Code: %s, Title: %s, Capacity: %d, Enrolled: %d, Schedule: %s\nDescription: %s",
+                             code, title, capacity, enrolledStudents, schedule, description);
+    }
+}
+
+class Student 
+{
+    private String studentId;
+    private String name;
+    private ArrayList<Course> registeredCourses = new ArrayList<>();
+
+    public Student(String studentId, String name) 
+    {
+        this.studentId = studentId;
+        this.name = name;
+    }
+
+    public String getStudentId() 
+    {
+        return studentId;
+    }
+
+    public String getName() 
+    {
+        return name;
+    }
+
+    public ArrayList<Course> getRegisteredCourses() 
+    {
+        return registeredCourses;
+    }
+
+    public boolean registerCourse(Course course) 
+    {
+        if (!registeredCourses.contains(course) && course.registerStudent()) 
+        {
+            registeredCourses.add(course);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean dropCourse(Course course) 
+    {
+        if (registeredCourses.contains(course) && course.removeStudent()) 
+        {
+            registeredCourses.remove(course);
+            return true;
+        }
+        return false;
+    }
+
+    public void listRegisteredCourses() 
+    {
+        if (registeredCourses.isEmpty()) 
+        {
+            System.out.println("No registered courses.");
+        } 
+        else 
+        {
+            System.out.println("Registered Courses:");
+            for (Course course : registeredCourses) 
+            {
+                System.out.println(course);
+            }
+        }
+    }
+}
+
+public class RegistrationSystem 
+{
+    private HashMap<String, Course> courses = new HashMap<>();
+    private HashMap<String, Student> students = new HashMap<>();
+    private Scanner scanner = new Scanner(System.in);
+
+    public void addCourse(Course course) 
+    {
+        courses.put(course.getCode(), course);
+    }
+
+    public void addStudent(Student student) 
+    {
+        students.put(student.getStudentId(), student);
+    }
+
+    public void listCourses() 
+    {
+        System.out.println("Available Courses:");
+        for (Course course : courses.values()) 
+        {
+            System.out.println(course);
+        }
+    }
+
+    public void registerStudentForCourse() 
+    {
+        System.out.print("Enter Student ID: ");
+        String studentId = scanner.nextLine();
+        Student student = students.get(studentId);
+
+        if (student == null) 
+        {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.print("Enter Course Code: ");
+        String courseCode = scanner.nextLine();
+        Course course = courses.get(courseCode);
+
+        if (course == null) 
+        {
+            System.out.println("Course not found.");
+            return;
+        }
+
+        if (student.registerCourse(course)) 
+        {
+            System.out.println("Registration successful!");
+        } else {
+            System.out.println("Registration failed. Course may be full or already registered.");
+        }
+    }
+
+    public void dropStudentFromCourse() 
+    {
+        System.out.print("Enter Student ID: ");
+        String studentId = scanner.nextLine();
+        Student student = students.get(studentId);
+
+        if (student == null) 
+        {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.print("Enter Course Code: ");
+        String courseCode = scanner.nextLine();
+        Course course = courses.get(courseCode);
+
+        if (course == null) 
+        {
+            System.out.println("Course not found.");
+            return;
+        }
+
+        if (student.dropCourse(course)) 
+        {
+            System.out.println("Course dropped successfully.");
+        } 
+        else 
+        {
+            System.out.println("Failed to drop course. The student may not be registered for this course.");
+        }
+    }
+
+    public void run() 
+    {
+        addCourse(new Course("CS101", "Introduction to Computer Science", "Basics of computer science.", 30, "Mon 10:00-12:00"));
+        addCourse(new Course("MTH101", "Calculus I", "Introduction to calculus.", 40, "Tue 08:00-10:00"));
+        addCourse(new Course("PHY101", "Physics I", "Fundamentals of physics.", 35, "Wed 09:00-11:00"));
+        addStudent(new Student("S001", "Alice Johnson"));
+        addStudent(new Student("S002", "Bob Smith"));
+
+        while (true) 
+        {
+            System.out.println("\n1. List Courses\n2. Register for Course\n3. Drop Course\n4. List Student Courses\n5. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) 
+            {
+                case 1:
+                    listCourses();
+                    break;
+                case 2:
+                    registerStudentForCourse();
+                    break;
+                case 3:
+                    dropStudentFromCourse();
+                    break;
+                case 4:
+                    System.out.print("Enter Student ID: ");
+                    String studentId = scanner.nextLine();
+                    Student student = students.get(studentId);
+                    if (student != null) 
+                    {
+                        student.listRegisteredCourses();
+                    } else {
+                        System.out.println("Student not found.");
+                    }
+                    break;
+                case 5:
+                    System.out.println("Exiting the system.");
+                    return;
+                default:
+                    System.out.println("Invalid option, please try again.");
+            }
+        }
+    }
+
+    public static void main(String[] args) 
+    {
+        RegistrationSystem system = new RegistrationSystem();
+        system.run();
+    }
+}
